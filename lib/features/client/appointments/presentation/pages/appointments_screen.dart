@@ -36,19 +36,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: BlocConsumer<AppointmentBloc, AppointmentState>(
-        listener: (context, state) {
-          // Error handling
-          if (state is AppointmentError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: ColorConstants.errorColor,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
-        },
+      body: BlocBuilder<AppointmentBloc, AppointmentState>(
         builder: (context, state) {
           return _buildBody(state);
         },
@@ -137,14 +125,9 @@ class _AppointmentsList extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (state) {
       AppointmentInitial() || AppointmentLoading() => const _LoadingView(),
-      AppointmentError(message: final message) => _ErrorView(
-          message: message,
-          onRetry: onRetry,
-        ),
+      AppointmentError(message: final message) => _EmptyView(),
       AppointmentsLoaded(appointments: final appointments) =>
         _buildLoadedView(appointments),
-
-      // Boshqa state-lar uchun default
       _ => const _LoadingView(),
     };
   }

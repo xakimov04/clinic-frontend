@@ -17,7 +17,7 @@ class DoctorAppointmentRemoteDataSourceImpl
   Future<List<DoctorAppointmentModel>> getDoctorAppointments() async {
     try {
       final response = await networkManager.fetchData(
-        url: '/get-zayovok-doktora',
+        url: '/get-zayavok-doktora/',
       );
 
       final data = response as List<dynamic>; // ✅ cast qildik

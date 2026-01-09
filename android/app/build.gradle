@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace           = "ru.clinic.app"
     compileSdk          = flutter.compileSdkVersion
-    ndkVersion          = "26.1.10909125"
+    ndkVersion          = "27.0.12077973"
 
     defaultConfig {
         applicationId    = "ru.clinic.app"
@@ -27,18 +27,18 @@ android {
         versionName      = flutter.versionName
     }
 
-    // signingConfigs {
-    //     release {
-    //         keyAlias keystoreProperties['keyAlias']
-    //         keyPassword keystoreProperties['keyPassword']
-    //         storeFile file(keystoreProperties['storeFile'])
-    //         storePassword keystoreProperties['storePassword']
-    //     }
-    // }
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
 
     buildTypes {
         release {
-            // signingConfig = signingConfigs.release
+            signingConfig = signingConfigs.release
             minifyEnabled false
             shrinkResources false
             
@@ -66,7 +66,7 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
     implementation 'com.google.firebase:firebase-messaging:23.0.0'
     implementation 'com.google.firebase:firebase-installations:17.0.0'
-    implementation platform('com.google.firebase:firebase-bom:31.2.0')  // so‘nggi BOM versiyasi
+    implementation platform('com.google.firebase:firebase-bom:31.2.0')  
 
 }
 
