@@ -372,7 +372,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
   // Орқага қайтиш логикаси
   Future<bool> _handleBackPress() async {
     if (_hasChanges && widget.isFromBooking) {
-      return await _showUnsavedChangesDialog() ?? false;
+      final shouldExit = await _showUnsavedChangesDialog() ?? false;
+      if (shouldExit && mounted) {
+        context.pop(false);
+      }
+      return false;
     }
 
     if (widget.isFromBooking) {
@@ -381,7 +385,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
     }
     context.pop();
 
-    return true;
+    return false;
   }
 
   // Сақланмаган ўзгаришлар диалоги
@@ -423,7 +427,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen>
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop(true);
-              context.pop(false); // Booking'га false қайтариш
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
