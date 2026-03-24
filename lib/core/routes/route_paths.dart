@@ -23,4 +23,5 @@ class RoutePaths {
       '/doctor-home/appointment-detail';
 
   static const String receptionsScreen = '/receptions';
+  static const String appointmentBooking = '/appointment-booking';
 }

@@ -51,12 +51,11 @@ class CategoryCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 _buildIllnessImage(illness.photo),
-                8.h, // 4.h dan 8.h ga o'zgartirdim
-                Expanded(
-                  child: _buildOptimizedText(illness.specialization),
-                ),
+                8.h,
+                _buildOptimizedText(illness.specialization),
               ],
             ),
           ),

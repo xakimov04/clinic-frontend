@@ -5,6 +5,7 @@ import 'package:clinic/features/client/chat/presentation/pages/chat_detail_scree
 import 'package:clinic/features/client/home/domain/clinics/entities/clinics_entity.dart';
 import 'package:clinic/features/client/home/domain/doctors/entities/doctor_entity.dart';
 import 'package:clinic/features/client/home/presentation/pages/clinic_details_screen.dart';
+import 'package:clinic/features/client/appointments/presentation/pages/appointment_booking_screen.dart';
 import 'package:clinic/features/client/home/presentation/pages/doctor_detail_screen.dart';
 import 'package:clinic/features/client/home/presentation/pages/illness_details_screen.dart';
 import 'package:clinic/features/doctor/chat/presentation/pages/doctor_chat_detail_screen.dart';
@@ -139,6 +140,25 @@ class AppRouter {
             }
 
             return DoctorDetailScreen(doctor: doctor);
+          },
+        ),
+
+        // Appointment Booking Screen (root level - no bottom nav)
+        GoRoute(
+          path: RoutePaths.appointmentBooking,
+          builder: (context, state) {
+            final extra = state.extra as Map<String, dynamic>?;
+            final doctor = extra?['doctor'] as DoctorEntity?;
+
+            if (doctor == null) {
+              return const Scaffold(
+                body: Center(
+                  child: Text('Врач не найден'),
+                ),
+              );
+            }
+
+            return AppointmentBookingScreen(doctor: doctor);
           },
         ),
 

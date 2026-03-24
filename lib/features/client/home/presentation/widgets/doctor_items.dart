@@ -8,7 +8,8 @@ import 'package:clinic/features/client/home/domain/doctors/entities/doctor_entit
 import 'package:clinic/features/client/home/presentation/bloc/doctor/doctor_bloc.dart';
 
 class DoctorItems extends StatefulWidget {
-  const DoctorItems({super.key});
+  final bool isTablet;
+  const DoctorItems({super.key, this.isTablet = false});
 
   @override
   State<DoctorItems> createState() => _DoctorItemsState();
@@ -208,23 +209,44 @@ class _DoctorItemsState extends State<DoctorItems>
     );
   }
 
-  // ASOSIY O'ZGARISH: Column orqali render qilish
   Widget _buildLoadedState(List<DoctorEntity> doctors) {
     if (doctors.isEmpty) {
       return _buildEmptyState();
     }
 
-    // ListView.separated o'rniga Column ishlatamiz
+    if (widget.isTablet) {
+      return _buildTabletGrid(doctors);
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         children: [
-          // Doktor kartalarini dinamik ravishda yaratish
           for (int index = 0; index < doctors.length; index++) ...[
             _buildAnimatedDoctorCard(doctors[index], index),
-            if (index < doctors.length - 1)
-              12.h, // Oxirgi elementdan keyin bo'shliq qo'ymaslik
+            if (index < doctors.length - 1) 12.h,
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabletGrid(List<DoctorEntity> doctors) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final crossAxisCount = screenWidth > 900 ? 3 : 2;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          for (int index = 0; index < doctors.length; index++)
+            SizedBox(
+              width: (screenWidth - 32 - (crossAxisCount - 1) * 12) /
+                  crossAxisCount,
+              child: _buildAnimatedDoctorCard(doctors[index], index),
+            ),
         ],
       ),
     );

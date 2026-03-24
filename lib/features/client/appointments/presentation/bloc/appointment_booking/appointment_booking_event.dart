@@ -48,6 +48,15 @@ class SelectTime extends AppointmentBookingEvent {
   List<Object?> get props => [time];
 }
 
+class SelectDuration extends AppointmentBookingEvent {
+  final Duration duration;
+
+  const SelectDuration(this.duration);
+
+  @override
+  List<Object?> get props => [duration];
+}
+
 class UpdateNotes extends AppointmentBookingEvent {
   final String notes;
 

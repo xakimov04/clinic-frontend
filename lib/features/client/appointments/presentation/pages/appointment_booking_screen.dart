@@ -163,6 +163,10 @@ class _AppointmentBookingScreenState extends State<AppointmentBookingScreen> {
         24.h,
         _TimeSelectionSection(state: state),
       ],
+      if (state.selectedTime != null) ...[
+        24.h,
+        _DurationSelectionSection(state: state),
+      ],
       24.h,
       _NotesInputSection(
         controller: _notesController,
@@ -729,12 +733,12 @@ class _TimeSelectionSection extends StatelessWidget {
             color: ColorConstants.textColor,
           ),
         ),
-        16.h,
+        12.h,
         Container(
-          padding: 20.a,
+          padding: 12.a,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.grey.shade300),
             boxShadow: [
               BoxShadow(
@@ -757,10 +761,10 @@ class _TimeSelectionSection extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 2.2,
+        crossAxisCount: 4,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 2.5,
       ),
       itemCount: state.timeSlots.length,
       itemBuilder: (context, index) => _TimeSlotCard(
@@ -793,6 +797,129 @@ class _TimeSelectionSection extends StatelessWidget {
   }
 }
 
+// Секция выбора длительности
+class _DurationSelectionSection extends StatelessWidget {
+  final AppointmentBookingState state;
+
+  const _DurationSelectionSection({required this.state});
+
+  static const List<Duration> _durations = [
+    Duration(minutes: 30),
+    Duration(hours: 1),
+    Duration(hours: 1, minutes: 30),
+    Duration(hours: 2),
+    Duration(hours: 2, minutes: 30),
+    Duration(hours: 3),
+    Duration(hours: 3, minutes: 30),
+    Duration(hours: 4),
+    Duration(hours: 4, minutes: 30),
+    Duration(hours: 5),
+  ];
+
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    if (hours == 0) return '$minutes мин';
+    if (minutes == 0) return '$hours ч';
+    return '$hours ч $minutes мин';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Длительность приема',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: ColorConstants.textColor,
+          ),
+        ),
+        16.h,
+        Container(
+          padding: 20.a,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade300),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: _durations.map((duration) {
+              final isSelected = state.selectedDuration == duration;
+              return _DurationChip(
+                label: _formatDuration(duration),
+                isSelected: isSelected,
+                onTap: () => context
+                    .read<AppointmentBookingBloc>()
+                    .add(SelectDuration(duration)),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Чип длительности
+class _DurationChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _DurationChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? ColorConstants.primaryColor
+                : Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? ColorConstants.primaryColor
+                  : Colors.grey.shade300,
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              color: isSelected ? Colors.white : ColorConstants.textColor,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // Карточка временного слота
 class _TimeSlotCard extends StatelessWidget {
   final TimeSlotEntity timeSlot;
@@ -809,22 +936,22 @@ class _TimeSlotCard extends StatelessWidget {
                 .read<AppointmentBookingBloc>()
                 .add(SelectTime(timeSlot.time))
             : null,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           decoration: BoxDecoration(
             color: _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: _getBorderColor(),
-              width: timeSlot.isSelected ? 2 : 1,
+              width: timeSlot.isSelected ? 1.5 : 1,
             ),
           ),
           child: Center(
             child: Text(
               timeSlot.time,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight:
                     timeSlot.isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: _getTextColor(),

@@ -16,6 +16,7 @@ class AppointmentBookingState extends Equatable {
   final List<DoctorEntity> clinicDoctors;
   final DateTime? selectedDate;
   final TimeOfDay? selectedTime;
+  final Duration? selectedDuration;
   final List<TimeSlotEntity> timeSlots;
   final String notes;
   final String specialization;
@@ -31,6 +32,7 @@ class AppointmentBookingState extends Equatable {
     this.clinicDoctors = const [],
     this.selectedDate,
     this.selectedTime,
+    this.selectedDuration,
     this.timeSlots = const [],
     this.notes = '',
     this.specialization = '',
@@ -53,6 +55,7 @@ class AppointmentBookingState extends Equatable {
     List<DoctorEntity>? clinicDoctors,
     DateTime? selectedDate,
     TimeOfDay? selectedTime,
+    Duration? selectedDuration,
     List<TimeSlotEntity>? timeSlots,
     String? notes,
     String? specialization,
@@ -68,6 +71,7 @@ class AppointmentBookingState extends Equatable {
       clinicDoctors: clinicDoctors ?? this.clinicDoctors,
       selectedDate: selectedDate ?? this.selectedDate,
       selectedTime: selectedTime ?? this.selectedTime,
+      selectedDuration: selectedDuration ?? this.selectedDuration,
       timeSlots: timeSlots ?? this.timeSlots,
       notes: notes ?? this.notes,
       specialization: specialization ?? this.specialization,
@@ -86,6 +90,7 @@ class AppointmentBookingState extends Equatable {
         clinicDoctors,
         selectedDate,
         selectedTime,
+        selectedDuration,
         timeSlots,
         notes,
         specialization,

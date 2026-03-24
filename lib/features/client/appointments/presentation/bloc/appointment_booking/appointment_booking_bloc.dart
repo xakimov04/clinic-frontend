@@ -27,6 +27,7 @@ class AppointmentBookingBloc
     on<SelectClinic>(_onSelectClinic);
     on<SelectDate>(_onSelectDate);
     on<SelectTime>(_onSelectTime);
+    on<SelectDuration>(_onSelectDuration);
     on<UpdateNotes>(_onUpdateNotes);
     on<CreateAppointment>(_onCreateAppointment);
     on<ResetBooking>(_onResetBooking);
@@ -84,6 +85,11 @@ class AppointmentBookingBloc
     ));
   }
 
+  void _onSelectDuration(
+      SelectDuration event, Emitter<AppointmentBookingState> emit) {
+    emit(state.copyWith(selectedDuration: event.duration));
+  }
+
   void _onUpdateNotes(
       UpdateNotes event, Emitter<AppointmentBookingState> emit) {
     emit(state.copyWith(notes: event.notes));
@@ -131,7 +137,7 @@ class AppointmentBookingBloc
   List<TimeSlotEntity> _generateTimeSlots() {
     final List<TimeSlotEntity> slots = [];
 
-    for (int hour = 9; hour <= 17; hour++) {
+    for (int hour = 0; hour <= 23; hour++) {
       for (int minute = 0; minute < 60; minute += 30) {
         final timeString =
             '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';

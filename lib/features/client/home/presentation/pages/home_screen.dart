@@ -2,6 +2,7 @@ import 'package:clinic/core/constants/color_constants.dart';
 import 'package:clinic/features/client/home/presentation/bloc/clinics/clinics_bloc.dart';
 import 'package:clinic/features/client/home/presentation/bloc/doctor/doctor_bloc.dart';
 import 'package:clinic/features/client/home/presentation/bloc/illness/illness_bloc.dart';
+import 'package:clinic/features/client/home/presentation/widgets/category_card.dart';
 import 'package:clinic/features/client/home/presentation/widgets/clinics_item.dart';
 import 'package:clinic/features/client/home/presentation/widgets/doctor_items.dart';
 import 'package:clinic/features/client/home/presentation/widgets/illness_categories.dart';
@@ -17,26 +18,24 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Основной ScrollController
   final ScrollController _scrollController = ScrollController();
 
-  // Активный индекс вкладки
+  // Telefon uchun: 0=Врачи, 1=Клиники
+  // Planshet uchun: 0=Врачи, 1=Клиники, 2=Категории
   int _currentIndex = 0;
 
-  // Состояние загрузки данных
   bool _doctorsLoaded = false;
   bool _clinicsLoaded = false;
+
+  bool get _isTablet => MediaQuery.of(context).size.width > 600;
 
   @override
   void initState() {
     super.initState();
     context.read<IllnessBloc>().add(IllnessGetAll());
-
-    // Dastlab birinchi tabdagi ma'lumotlarni yuklash
     _loadDoctorsData();
   }
 
-  // Загрузка данных для первой вкладки
   void _loadDoctorsData() {
     if (!_doctorsLoaded) {
       context.read<DoctorBloc>().add(const GetDoctorEvent());
@@ -44,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Загрузка данных о врачах
   void _loadClinicsData() {
     if (!_clinicsLoaded) {
       context.read<ClinicsBloc>().add(const GetClinicsEvent());
@@ -52,18 +50,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Логика переключения вкладок
   void _switchTab(int index) {
     if (_currentIndex != index) {
       setState(() {
         _currentIndex = index;
       });
 
-      // Загрузка данных при необходимости
-      if (index == 0) {
-        _loadDoctorsData();
-      } else if (index == 1) {
-        _loadClinicsData();
+      if (_isTablet) {
+        // Planshet: 0=Врачи, 1=Клиники, 2=Категории
+        if (index == 0) _loadDoctorsData();
+        if (index == 1) _loadClinicsData();
+      } else {
+        // Telefon: 0=Врачи, 1=Клиники
+        if (index == 0) _loadDoctorsData();
+        if (index == 1) _loadClinicsData();
       }
     }
   }
@@ -123,41 +123,143 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: ColorConstants.backgroundColor,
         color: ColorConstants.primaryColor,
         onRefresh: () async {
-          // Refresh qilish uchun ma'lumotlarni qayta yuklash
-          if (_currentIndex == 0) {
-            context.read<DoctorBloc>().add(const GetDoctorEvent());
-            context.read<IllnessBloc>().add(IllnessGetAllNotLoading());
-          } else if (_currentIndex == 1) {
-            context.read<ClinicsBloc>().add(const GetClinicsEvent());
-            context.read<IllnessBloc>().add(IllnessGetAllNotLoading());
+          if (_isTablet) {
+            if (_currentIndex == 0) {
+              context.read<DoctorBloc>().add(const GetDoctorEvent());
+            } else if (_currentIndex == 1) {
+              context.read<ClinicsBloc>().add(const GetClinicsEvent());
+            } else if (_currentIndex == 2) {
+              context.read<IllnessBloc>().add(IllnessGetAllNotLoading());
+            }
+          } else {
+            if (_currentIndex == 0) {
+              context.read<DoctorBloc>().add(const GetDoctorEvent());
+              context.read<IllnessBloc>().add(IllnessGetAllNotLoading());
+            } else if (_currentIndex == 1) {
+              context.read<ClinicsBloc>().add(const GetClinicsEvent());
+              context.read<IllnessBloc>().add(IllnessGetAllNotLoading());
+            }
           }
         },
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            // Kasalliklar kategoriyalari
-            SliverToBoxAdapter(
-              child: IllnessCategories(),
-            ),
+        child: _isTablet ? _buildTabletLayout() : _buildPhoneLayout(),
+      ),
+    );
+  }
 
-            // Custom Tab Bar
-            SliverToBoxAdapter(
-              child: _buildTabBar(context),
-            ),
+  // ==================== TELEFON LAYOUT ====================
+  Widget _buildPhoneLayout() {
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: [
+        SliverToBoxAdapter(child: IllnessCategories()),
+        SliverToBoxAdapter(child: _buildPhoneTabBar()),
+        SliverToBoxAdapter(
+          child:
+              _currentIndex == 0 ? const DoctorItems() : const ClinicsItem(),
+        ),
+      ],
+    );
+  }
 
-            // ASOSIY O'ZGARISH: SliverToBoxAdapter orqali content ko'rsatish
-            SliverToBoxAdapter(
-              child: _currentIndex == 0
-                  ? const DoctorItems()
-                  : const ClinicsItem(),
+  // ==================== PLANSHET LAYOUT ====================
+  Widget _buildTabletLayout() {
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: [
+        // 3 tab: Категории | Врачи | Клиники
+        SliverToBoxAdapter(child: _buildTabletTabBar()),
+
+        // Tanlangan tabga mos content
+        SliverToBoxAdapter(child: _buildTabletContent()),
+      ],
+    );
+  }
+
+  Widget _buildTabletContent() {
+    switch (_currentIndex) {
+      case 0:
+        return const DoctorItems(isTablet: true);
+      case 1:
+        return const ClinicsItem(isTablet: true);
+      case 2:
+        return _buildTabletCategories();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  // Planshet uchun kategoriyalar wrap ko'rinishda
+  Widget _buildTabletCategories() {
+    return BlocBuilder<IllnessBloc, IllnessState>(
+      builder: (context, state) {
+        if (state is IllnessLoading || state is IllnessInitial) {
+          return _buildTabletCategoriesLoading();
+        }
+        // Agar detail sahifasidan qaytgan bo'lsa, qayta yuklash
+        if (state is! IllnessLoaded) {
+          context.read<IllnessBloc>().add(IllnessGetAllNotLoading());
+          return _buildTabletCategoriesLoading();
+        }
+        if (state is IllnessLoaded) {
+          final screenWidth = MediaQuery.of(context).size.width;
+          final crossAxisCount = screenWidth > 900 ? 5 : 4;
+          final spacing = 12.0;
+          final itemWidth =
+              (screenWidth - 32 - (crossAxisCount - 1) * spacing) /
+                  crossAxisCount;
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: [
+                for (final illness in state.illnesses)
+                  SizedBox(
+                    width: itemWidth,
+                    child: CategoryCard(illness: illness),
+                  ),
+              ],
             ),
-          ],
+          );
+        }
+        if (state is IllnessError || state is IllnessEmpty) {
+          return const SizedBox.shrink();
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildTabletCategoriesLoading() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final crossAxisCount = screenWidth > 900 ? 5 : 4;
+    final spacing = 12.0;
+    final itemWidth =
+        (screenWidth - 32 - (crossAxisCount - 1) * spacing) / crossAxisCount;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Wrap(
+        spacing: spacing,
+        runSpacing: spacing,
+        children: List.generate(
+          8,
+          (i) => Container(
+            width: itemWidth,
+            height: itemWidth / 0.9,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTabBar(BuildContext context) {
+  // ==================== TELEFON TAB BAR (2 tab) ====================
+  Widget _buildPhoneTabBar() {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 14, 16, 8),
       height: 40,
@@ -172,37 +274,93 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          // Siljuvchi background animatsiyasi
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutQuint,
-            left: _currentIndex * (MediaQuery.of(context).size.width - 32) / 2,
-            top: 0,
-            bottom: 0,
-            width: (MediaQuery.of(context).size.width - 32) / 2,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                gradient: ColorConstants.primaryGradient,
-                boxShadow: [
-                  BoxShadow(
-                    color: ColorConstants.primaryColor.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalWidth = constraints.maxWidth;
+          return Stack(
+            children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutQuint,
+                left: _currentIndex * totalWidth / 2,
+                top: 0,
+                bottom: 0,
+                width: totalWidth / 2,
+                child: _buildActiveTabBackground(),
+              ),
+              Row(
+                children: [
+                  _buildTabButton(
+                      "Врачи", 0, Icons.medical_services_outlined),
+                  _buildTabButton(
+                      "Клиники", 1, Icons.local_hospital_outlined),
                 ],
               ),
-            ),
-          ),
-
-          // Tab tugmalari
-          Row(
-            children: [
-              _buildTabButton("Врачи", 0, Icons.medical_services_outlined),
-              _buildTabButton("Клиники", 1, Icons.local_hospital_outlined),
             ],
+          );
+        },
+      ),
+    );
+  }
+
+  // ==================== PLANSHET TAB BAR (3 tab) ====================
+  Widget _buildTabletTabBar() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      height: 44,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: ColorConstants.shadowColor.withOpacity(0.08),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalWidth = constraints.maxWidth;
+          final tabWidth = totalWidth / 3;
+          return Stack(
+            children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutQuint,
+                left: _currentIndex * tabWidth,
+                top: 0,
+                bottom: 0,
+                width: tabWidth,
+                child: _buildActiveTabBackground(),
+              ),
+              Row(
+                children: [
+                  _buildTabButton(
+                      "Врачи", 0, Icons.medical_services_outlined),
+                  _buildTabButton(
+                      "Клиники", 1, Icons.local_hospital_outlined),
+                  _buildTabButton(
+                      "Категории", 2, Icons.category_outlined),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildActiveTabBackground() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        gradient: ColorConstants.primaryGradient,
+        boxShadow: [
+          BoxShadow(
+            color: ColorConstants.primaryColor.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),

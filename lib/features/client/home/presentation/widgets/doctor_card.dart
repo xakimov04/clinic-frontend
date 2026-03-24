@@ -2,6 +2,7 @@ import 'package:clinic/core/constants/color_constants.dart';
 import 'package:clinic/core/extension/spacing_extension.dart';
 import 'package:clinic/core/ui/widgets/images/custom_cached_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,8 +23,9 @@ class DoctorCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
+          HapticFeedback.lightImpact();
           context.push(
-            '/doctor/${doctor.id}',
+            '/appointment-booking',
             extra: {
               'doctor': doctor,
             },

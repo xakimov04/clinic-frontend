@@ -10,7 +10,8 @@ import 'package:clinic/features/client/home/presentation/bloc/clinics_doctor/cli
 import 'package:go_router/go_router.dart';
 
 class ClinicsItem extends StatefulWidget {
-  const ClinicsItem({super.key});
+  final bool isTablet;
+  const ClinicsItem({super.key, this.isTablet = false});
 
   @override
   State<ClinicsItem> createState() => _ClinicsItemState();
@@ -255,6 +256,10 @@ class _ClinicsItemState extends State<ClinicsItem>
   }
 
   Widget _buildLoadedState(List<ClinicsEntity> clinics) {
+    if (widget.isTablet) {
+      return _buildTabletGrid(clinics);
+    }
+
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: clinics.length,
@@ -265,6 +270,27 @@ class _ClinicsItemState extends State<ClinicsItem>
         final clinic = clinics[index];
         return _buildAnimatedClinicCard(clinic, index);
       },
+    );
+  }
+
+  Widget _buildTabletGrid(List<ClinicsEntity> clinics) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final crossAxisCount = screenWidth > 900 ? 3 : 2;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          for (int index = 0; index < clinics.length; index++)
+            SizedBox(
+              width: (screenWidth - 32 - (crossAxisCount - 1) * 12) /
+                  crossAxisCount,
+              child: _buildAnimatedClinicCard(clinics[index], index),
+            ),
+        ],
+      ),
     );
   }
 
